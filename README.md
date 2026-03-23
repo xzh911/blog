@@ -1,0 +1,3 @@
+# Blog
+
+My VitePress blog.

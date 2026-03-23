@@ -1,0 +1,20 @@
+# node
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# build
+.vitepress/dist/
+.vitepress/cache/
+
+# logs
+logs/
+*.log
+
+# system
+.DS_Store
+Thumbs.db
+
+# env
+.env*

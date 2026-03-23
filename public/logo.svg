@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="DevOps Notes logo">
+  <defs>
+    <linearGradient id="devops-notes-logo-gradient" x1="18" y1="14" x2="78" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="24" fill="#081223"/>
+  <rect x="8" y="8" width="80" height="80" rx="20" fill="url(#devops-notes-logo-gradient)"/>
+  <path d="M31 24h17c12.703 0 23 10.297 23 23S60.703 70 48 70H31V24zm15 12h-5v22h5c6.075 0 11-4.925 11-11S52.075 36 46 36z" fill="#f8fafc"/>
+  <path d="M28 20h40" stroke="rgba(255,255,255,0.28)" stroke-linecap="round" stroke-width="2"/>
+</svg>
