@@ -85,7 +85,7 @@ const logsSidebarItems = [{ text: '日志总览', link: '/logs/' }, ...getLogsSi
 
 export default {
   lang: 'zh-CN',
-  base: '/blog/',
+  base: '/',
   title: 'DevOps Notes',
   description: 'DevOps / Linux / Kubernetes learning notes',
   cleanUrls: true,
