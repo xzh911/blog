@@ -20,7 +20,7 @@ category: Network
 最早的直接症状是：
 
 ```bash
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo apt update
+xxx@CLOUDVM:~$ sudo apt update
 0% [Connecting to mirrors.cloud.aliyuncs.com (100.100.2.148)]
 0% [Connecting to mirrors.cloud.aliyuncs.com (100.100.2.148)]
 0% [Connecting to mirrors.cloud.aliyuncs.com (100.100.2.148)]^C
@@ -29,11 +29,11 @@ xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo apt update
 这时我先做了两件事：看解析结果、看路由。
 
 ```bash
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo cat /etc/resolv.conf
+xxx@CLOUDVM:~$ sudo cat /etc/resolv.conf
 nameserver 119.29.29.29
 
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ ip route get 100.100.2.148
-100.100.2.148 via 172.26.63.253 dev eth0 src 172.26.7.33 uid 1001
+xxx@CLOUDVM:~$ ip route get 100.100.2.148
+100.100.2.148 via ***.***.***.253 dev eth0 src ***.***.***.33 uid 1001
     cache
 ```
 
@@ -55,13 +55,13 @@ TCP 三次握手里，客户端发 `SYN`，服务端回 `SYN-ACK`，客户端再
 所以我直接抓 80 端口的 TCP 包：
 
 ```bash
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo tcpdump -i eth0 -nn host 100.100.2.148 and tcp port 80 
+xxx@CLOUDVM:~$ sudo tcpdump -i eth0 -nn host 100.100.2.148 and tcp port 80
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
-10:00:09.364532 IP 100.100.2.148.80 > 172.26.7.33.46166: Flags [S.], seq 3205938873, ack 2638450993, win 64240, options [mss 1440,nop,nop,sackOK,nop,wscale 7], length 0
-10:00:11.930532 IP 172.26.7.33.59900 > 100.100.2.148.80: Flags [S], seq 2034901454, win 64240, options [mss 1460,sackOK,TS val 92182152 ecr 0,nop,wscale 7], length 0
-10:00:11.934414 IP 100.100.2.148.80 > 172.26.7.33.59900: Flags [S.], seq 1125267407, ack 2034901455, win 29200, options [mss 1440,nop,nop,sackOK,nop,wscale 7], length 0
-10:00:12.975269 IP 172.26.7.33.59900 > 100.100.2.148.80: Flags [S], seq 2034901454, win 64240, options [mss 1460,sackOK,TS val 92183197 ecr 0,nop,wscale 7], length 0
+10:00:09.364532 IP 100.100.2.148.80 > ***.***.***.33.46166: Flags [S.], seq 3205938873, ack 2638450993, win 64240, options [mss 1440,nop,nop,sackOK,nop,wscale 7], length 0
+10:00:11.930532 IP ***.***.***.33.59900 > 100.100.2.148.80: Flags [S], seq 2034901454, win 64240, options [mss 1460,sackOK,TS val 92182152 ecr 0,nop,wscale 7], length 0
+10:00:11.934414 IP 100.100.2.148.80 > ***.***.***.33.59900: Flags [S.], seq 1125267407, ack 2034901455, win 29200, options [mss 1440,nop,nop,sackOK,nop,wscale 7], length 0
+10:00:12.975269 IP ***.***.***.33.59900 > 100.100.2.148.80: Flags [S], seq 2034901454, win 64240, options [mss 1460,sackOK,TS val 92183197 ecr 0,nop,wscale 7], length 0
 ...
 ```
 
@@ -81,10 +81,10 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 这时我继续排除基础项：
 
 ```bash
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sysctl net.ipv4.conf.all.rp_filter
+xxx@CLOUDVM:~$ sysctl net.ipv4.conf.all.rp_filter
 net.ipv4.conf.all.rp_filter = 0
 
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo ufw status verbose
+xxx@CLOUDVM:~$ sudo ufw status verbose
 Status: inactive
 ```
 
@@ -158,16 +158,16 @@ flowchart TB
 为了避免只是“看起来像”，我在 `netfilter-mode=on` 下，手工往 `ts-input` 最前面插了一条例外：
 
 ```bash
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo tailscale down
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo tailscale up --accept-dns=false --netfilter-mode=on
+xxx@CLOUDVM:~$ sudo tailscale down
+xxx@CLOUDVM:~$ sudo tailscale up --accept-dns=false --netfilter-mode=on
 Some peers are advertising routes but --accept-routes is false
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ curl -I --connect-timeout 5 http://mirrors.cloud.aliyuncs.com/ubuntu/
+xxx@CLOUDVM:~$ curl -I --connect-timeout 5 http://mirrors.cloud.aliyuncs.com/ubuntu/
 
 curl: (28) Failed to connect to mirrors.cloud.aliyuncs.com port 80 after 5002 ms: Timeout was reached
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo iptables -I ts-input 1 -s 100.100.2.148/32 -i eth0 -j ACCEPT
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ sudo iptables -I ts-input 1 -s 100.100.2.148/32 -i eth0 -j ACCEPT
-xxx@iZbp1iz8ex9iwwpz8hzkptZ:~$ curl -I --connect-timeout 5 http://mirrors.cloud.aliyuncs.com/ubuntu/
+xxx@CLOUDVM:~$
+xxx@CLOUDVM:~$ sudo iptables -I ts-input 1 -s 100.100.2.148/32 -i eth0 -j ACCEPT
+xxx@CLOUDVM:~$ sudo iptables -I ts-input 1 -s 100.100.2.148/32 -i eth0 -j ACCEPT
+xxx@CLOUDVM:~$ curl -I --connect-timeout 5 http://mirrors.cloud.aliyuncs.com/ubuntu/
 HTTP/1.1 200 OK
 Server: Tengine
 Date: Mon, 23 Mar 2026 02:44:19 GMT
